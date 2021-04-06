@@ -2,26 +2,29 @@ clear all
 close all
 echo off 
 
-folderSrc = fullfile(pwd, 'data');
+folderSrc = fullfile(pwd, 'data_converted');
 folderInfo = dir(folderSrc); 
 
-% tracé courbe consommation (faire commencer à 3)
-i = 3;
+%% load libs
+addpath(fullfile(pwd, 'lib'))
+
+%% tracé courbe consommation (faire commencer à 3)
+disp("Tracé une seule courbe...")
+
+i = 3; % éviter le "." et ".."
 T = csvread(fullfile(folderSrc, folderInfo(i).name));
 Time = 0:size(T,2)-1;
 figure
 plot(Time, T, 'r')
 title(['trace consommation n° ',num2str(i-2)])
 
-% moyenne consommation 
+%% moyenne consommation 
+disp("Calcul moyenne consommation...")
 
 moyenne = ones(1, 4000);
-for j = 3:20002 
-    T = csvread(fullfile(folderSrc, folderInfo(j).name));
-    for l = 1:4000
-        moyenne(1,l)= moyenne(1,l) + T(l);
-    end
-    moyenne(:) = T/20000;
+for j = progress(3:20002) 
+    T = load(fullfile(folderSrc, folderInfo(j).name), '-mat').data;
+    moyenne = moyenne + T/20000;
 end
 
 
