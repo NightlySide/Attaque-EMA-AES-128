@@ -14,17 +14,16 @@ plot(Time, T, 'r')
 title(['trace consommation n° ',num2str(i-2)])
 
 % moyenne consommation 
- 
-data = zeros(4000, 20000);
+
 moyenne = ones(1, 4000);
 for j = 3:20002 
     T = csvread(fullfile(folderSrc, folderInfo(j).name));
-    data(:, j-2) = T; 
+    for l = 1:4000
+        moyenne(1,l)= moyenne(1,l) + T(l);
+    end
+    moyenne(:) = T/20000;
+end
 
-end
-for k = 1:4000
-    moyenne(1,k)=mean(data(:,k));
-end
 
 figure
 plot(Time, moyenne, 'r')
