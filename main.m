@@ -12,7 +12,7 @@ addpath(fullfile(pwd, 'lib'))
 disp("Tracé une seule courbe...")
 
 i = 3; % éviter le "." et ".."
-T = csvread(fullfile(folderSrc, folderInfo(i).name));
+T = load(fullfile(folderSrc, folderInfo(i).name), "-mat").data;
 Time = 0:size(T,2)-1;
 figure
 plot(Time, T, 'r')
