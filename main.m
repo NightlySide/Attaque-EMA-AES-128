@@ -64,6 +64,10 @@ hold off
 
 disp(fullfile(folderSrc, folderInfo(i).name));
 
+%% 4) Selection du dernier round pour attaquer plus rapidement
+% par lecture le dernier round se trouve entre t=3057 et t=3330
+dernier_round = moyenne(3057:3330);
+
 %% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque) 
 % récupération du chiffré X_str
 A = strsplit(folderInfo(3).name, '_cto=');
@@ -80,8 +84,3 @@ end
 Z = bitxor(uint8(single(X)*ones(1,256)),uint8(ones(size(X,1),1)*(0:255)))+1; 
 
 %% remontage vers point d'attaque 
-
-
-%% 4) Selection du dernier round pour attaquer plus rapidement
-% par lecture le dernier round se trouve entre t=3057 et t=3330
-dernier_round = moyenne(3057:3330);
