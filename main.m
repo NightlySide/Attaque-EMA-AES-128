@@ -81,7 +81,12 @@ for i = 1:length(X_str)
    X(i) = hex2dec(X_str(i));
 end
 
-% conversion vers un vecteurs d'octets 
+
+% on remonte en appliquant une shiftrow inverse 
+
+Xs = shiftrowinv(X); 
+
+
 
 % prédiction d'état après XOR 
 Z = bitxor(uint8(single(X)*ones(1,256)),uint8(ones(size(X,1),1)*(0:255)))+1; 

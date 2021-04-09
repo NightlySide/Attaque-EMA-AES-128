@@ -5,6 +5,9 @@ echo off
 %% Chargement des bibliothèques et des fichiers sources
 addpath(fullfile(pwd, 'lib'))
 
+% création des dossier de cache
+createFolders()
+
 % conversion des fichiers csv->m
 convertData()
 
@@ -64,6 +67,10 @@ hold off
 
 disp(fullfile(folderSrc, folderInfo(i).name));
 
+%% 4) Selection du dernier round pour attaquer plus rapidement
+% par lecture le dernier round se trouve entre t=3057 et t=3330
+dernier_round = moyenne(3057:3330);
+
 %% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque) 
 % récupération du chiffré X_str
 A = strsplit(folderInfo(3).name, '_cto=');
@@ -74,14 +81,18 @@ for i = 1:length(X_str)
    X(i) = hex2dec(X_str(i));
 end
 
-% conversion vers un vecteurs d'octets 
+X1 = X(1:16);
+X2 = X(17:32);
 
+% on remonte en appliquant une shiftrow inverse 
+
+function shiftrowinv(S)
+    
+end 
+
+shiftrowinv(X1); 
+shiftrowinv(X2); 
 % prédiction d'état après XOR 
-%Z = bitxor(uint8(single(X)*ones(1,256)),uint8(ones(size(X,1),1)*(0:255)))+1; 
+Z = bitxor(uint8(single(X)*ones(1,256)),uint8(ones(size(X,1),1)*(0:255)))+1; 
 
 %% remontage vers point d'attaque 
-
-
-%% 4) Selection du dernier round pour attaquer plus rapidement
-% par lecture le dernier round se trouve entre t=3057 et t=3330
-dernier_round = moyenne(3057:3330);
