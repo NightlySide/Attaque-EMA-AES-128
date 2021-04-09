@@ -62,23 +62,17 @@ hold off
 
 %% 3) Démontrer que le poids de Hamming peut s'appliquer au dernier round
 
-% on normalise la moyenne pour appliquer le poids de hamming
-offset = mean(moyenne);
-moyenne = moyenne - (ones(size(moyenne)) * offset);
-
-% Présentation des résultats
-figure
-Time = 0:size(moyenne,2)-1;
-plot(Time, moyenne, 'r')
-grid()
-ylabel("Fuite électromagnétique")
-xlabel("Temps")
-title('Moyenne de consommation')
+disp(fullfile(folderSrc, folderInfo(i).name));
 
 %% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque) 
-% récupération du chiffré X 
+% récupération du chiffré X_str
 A = strsplit(folderInfo(3).name, '_cto=');
-X = strtok(A{1,2}, '.');
+X_str = strtok(A{1,2}, '.');
+% conversion en chiffré manipulable
+X = ones(length(X_str), 1);
+for i = 1:length(X_str)
+   X(i) = hex2dec(X_str(i));
+end
 
 % conversion vers un vecteurs d'octets 
 
