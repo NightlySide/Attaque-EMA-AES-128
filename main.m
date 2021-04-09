@@ -86,6 +86,7 @@ z_10=de2bi(zattack,8,'left-msb');
 HW = uint8(reshape(sum(z_10,2),size(zattack,1),size(zattack,2)));
 phi = HW; 
 
+
 L = load(fullfile(folderSrc, folderInfo(3).name), "-mat").data;
 cor=corr(single(phi),L);
 
