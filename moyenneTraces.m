@@ -12,13 +12,13 @@ function moyenne = moyenneTraces(folder_name)
 
         % folderInfo
         folderSrc = fullfile(pwd, folder_name);
-        folderInfo = dir(folderSrc); 
+        traceFiles = dir(fullfile(folderSrc, "*.csv")); 
 
         moyenne = ones(1, 4000);
         % pour chaque fichier dans le dossier data
-        for j = progress(3:20002) 
+        for j = progress(1:length(traceFiles)) 
             % on charge les données et on met a jour la moyenne
-            T = load(fullfile(folderSrc, folderInfo(j).name), '-mat').data;
+            T = load(fullfile(folderSrc, traceFiles(j).name), '-mat').data;
             moyenne = moyenne + T/20000;
         end
         disp("Mise en cache de la moyenne")

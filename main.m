@@ -5,6 +5,9 @@ echo off
 %% Chargement des bibliothèques et des fichiers sources
 addpath(fullfile(pwd, 'lib'))
 
+% création des dossier de cache
+createFolders()
+
 % conversion des fichiers csv->m
 convertData()
 
