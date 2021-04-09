@@ -76,9 +76,9 @@ dernier_round = moyenne(3057:3330);
 A = strsplit(folderInfo(3).name, '_cto=');
 X_str = strtok(A{1,2}, '.');
 % conversion en chiffré manipulable
-X = ones(length(X_str), 1);
-for i = 1:length(X_str)
-   X(i) = hex2dec(X_str(i));
+X = ones(length(X_str)/2, 1);
+for i = 1:(length(X_str)/2)
+   X(i) = hex2dec(X_str(i:i+1));
 end
 
 
