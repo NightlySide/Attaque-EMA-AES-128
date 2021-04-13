@@ -6,7 +6,8 @@ function Zattack = zattackFromFileName(file_name)
     for i = 1:(length(X_str)/2)
        X(i) = hex2dec(X_str(i:i+1));
     end
-    % prédiction d'état après XOR 
+    % prédiction d'état après XOR (
+    
     Z = bitxor(uint8(single(X)*ones(1,256)),uint8(ones(size(X,1),1)*(0:255)))+1; 
 
     % on remonte en appliquant une shiftrow inverse 

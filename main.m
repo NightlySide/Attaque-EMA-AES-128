@@ -72,13 +72,12 @@ disp(fullfile(folderSrc, folderInfo(i).name));
 % par lecture le dernier round se trouve entre t=3057 et t=3330
 dernier_round = moyenne(3057:3330);
 
-%% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque) 
+%% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque) A REFAIRE 
 % récupération du chiffré X_str
 
-zattack = zeros(20000:16);
-for i = progress(3:20002)
-   zattack(i-2, :) = zattackFromFileName(fullfile(folderSrc, folderInfo(i).name));
-end
+
+zattack = zattackFromFileName(fullfile(folderSrc, folderInfo(5).name));
+
 
 %% attaque par HW
 
@@ -87,6 +86,15 @@ HW = uint8(reshape(sum(z_10,2),size(zattack,1),size(zattack,2)));
 phi = HW; 
 
 
-L = load(fullfile(folderSrc, folderInfo(3).name), "-mat").data;
+L = load(fullfile(pwd, "cache", "fuites.mat"), "-mat").fuites;
 cor=corr(single(phi),L);
+figure 
+plot ((3000:3500), cor(1:16, 3000:3500))
+title('16 coef de corrélation')
+xlabel('echantillon')
+ylabel('correlation')
+
+[RK, IK] = sort(max(abs(cor(1:16, 3000:3500)), [], 2), 'descend'); 
+sprintf('%s %d', 'meilleur candidat : k=', IK(1) - 1)
+best_candidate=IK(1);
 
