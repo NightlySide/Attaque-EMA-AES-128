@@ -85,7 +85,7 @@ clearvars i rounds_t_nb Time;
 
 %% 4) Selection du dernier round pour attaquer plus rapidement
 % par lecture le dernier round se trouve entre t=3057 et t=3330
-dernier_round = 3000:3500;
+dernier_round = 2700:3500;
 moyenne_sur_dernier_round = moyenne(dernier_round);
 
 %% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque)
@@ -104,7 +104,7 @@ for k = 3:20002
     end
 end
 
-Ntraces = 3200;
+Ntraces = 5000;
 Z = uint8(zeros(Ntraces,256,16));
 Z_sr = uint8(zeros(Ntraces,256,16));
 Z_sb = uint8(zeros(Ntraces,256,16));
@@ -118,7 +118,7 @@ for trace = 1:Ntraces
     end 
 end 
 % xor 
-cle = uint8(zeros(1,256,16));
+cle = uint8(zeros(Ntraces,256,16));
 for k = 0:255
    cle(:, k+1, :) = k;
 end
@@ -170,7 +170,7 @@ for k = 1:16
 
     [RK, IK] = sort(max(abs(cor(:, :)), [], 2), 'descend'); 
     fprintf('%s %d %s %d \n','sous cle n°', k, ' : meilleur candidat : k=', IK(1) - 1)
-    best_candidate(k)=IK(1);
+    best_candidate(k)=IK(1)-1;
 end 
 
 %% 
