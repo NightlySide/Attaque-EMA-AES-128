@@ -85,22 +85,27 @@ moyenne_sur_dernier_round = moyenne(dernier_round);
 %% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque) A REFAIRE 
 % récupération du chiffré X_str
 
-file_name = fullfile(folderSrc, folderInfo(5).name);
- A = strsplit(file_name, '_cto=');
+X = zeros(20000, 16);
+for k = 3:20002
+    file_name = fullfile(folderSrc, folderInfo(k).name);
+    A = strsplit(file_name, '_cto=');
     X_str = strtok(A{1,2}, '.');
     % conversion en chiffré manipulable
-    X = ones(length(X_str)/2, 1);
     for i = 1:(length(X_str)/2)
-       X(i) = hex2dec(X_str(i:i+1));
+        X(k-2, i) = hex2dec(X_str(i:i+1));
     end
-    
-Z = uint8(zeros(1,256,16));
-Z_sr = uint8(zeros(1,256,16));
-Z_sb = uint8(zeros(1,256,16));
+end
 
-for i = 1:16 
-    for j = 1:256 
-        Z(1,j,i)=X(i);
+Ntraces = 500;
+Z = uint8(zeros(Ntraces,256,16));
+Z_sr = uint8(zeros(Ntraces,256,16));
+Z_sb = uint8(zeros(Ntraces,256,16));
+
+for trace = 1:Ntraces
+    for i = 1:16 
+        for j = 1:256 
+            Z(trace,j,i)=X(trace,i);
+        end 
     end 
 end 
 % xor 
@@ -137,14 +142,9 @@ z_10 = reshape(cellstr(dec2bin(Z_sb, 8)), size(Z_sb));
 HW = count(z_10, "1");
 phi = HW; 
 
-shiftRowInv = [1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3, 16, 13, 10, 7, 4];
-
-% a une dimension mais tu peux l'appliquer sur la colonne de ton choix
-Z_init = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-Z_modif = Z_init(shiftRowInv);
-
 L = load(fullfile(pwd, "cache", "fuites.mat"), "-mat").fuites;
-cor=corr(single(phi),L);
+
+cor=corr(single(phi(:,:,1)),L(1:Ntraces,:));
 figure 
 plot ((3000:3500), cor(1:16, 3000:3500))
 title('16 coef de corrélation')
