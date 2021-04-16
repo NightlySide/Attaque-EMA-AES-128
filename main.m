@@ -85,7 +85,7 @@ clearvars i rounds_t_nb Time;
 
 %% 4) Selection du dernier round pour attaquer plus rapidement
 % par lecture le dernier round se trouve entre t=3057 et t=3330
-dernier_round = 2700:3500;
+dernier_round = 2700:3200;
 moyenne_sur_dernier_round = moyenne(dernier_round);
 
 %% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque)
@@ -160,15 +160,17 @@ L = load(fullfile(pwd, "cache", "fuites.mat"), "-mat").fuites;
 
 disp("Calcul des corrélations pour les sous-clés")
 for k = 1:16
-    cor=corr(single(phi(:,:,k)),L(1:Ntraces, dernier_round));
-    
-%     figure 
-%     plot ((dernier_round), cor(:, dernier_round))
-%     title('bcp de coef de correlation')
-%     xlabel('echantillon')
-%     ylabel('correlation')
+    cor=corr(single(phi(:,:,k)),L(1:Ntraces, :));
+  
+    if k == 1
+    figure 
+    plot ((dernier_round), cor(:, dernier_round))
+    title('bcp de coef de correlation')
+    xlabel('echantillon')
+    ylabel('correlation')
+    end
 
-    [RK, IK] = sort(max(abs(cor(:, :)), [], 2), 'descend'); 
+    [RK, IK] = sort(max(abs(cor(:, dernier_round)), [], 2), 'descend'); 
     fprintf('%s %d %s %d \n','sous cle n°', k, ' : meilleur candidat : k=', IK(1) - 1)
     best_candidate(k)=IK(1)-1;
 end 
