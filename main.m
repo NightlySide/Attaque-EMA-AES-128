@@ -1,7 +1,7 @@
-clc
-clear all 
-close all
-echo off 
+% clc
+% clear all 
+% close all
+% echo off 
 
 %% Chargement des bibliothèques et des fichiers sources
 addpath(fullfile(pwd, 'lib'))
@@ -90,11 +90,12 @@ moyenne_sur_dernier_round = moyenne(dernier_round);
 
 %% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque)
 % récupération du chiffré X_str
+Ntraces = 20000;
 disp("-- 5) Prédiction d'état")
 
 disp("Récupération des chiffrés")
-X = zeros(20000, 16);
-for k = 3:20002
+X = zeros((Ntraces+2), 16);
+for k = 3:(Ntraces+2)
     file_name = fullfile(folderSrc, folderInfo(k).name);
     A = strsplit(file_name, '_cto=');
     X_str = strtok(A{1,2}, '.');
@@ -104,24 +105,23 @@ for k = 3:20002
     end
 end
 
-Ntraces = 5000;
 Z = uint8(zeros(Ntraces,256,16));
 
 disp("Remplissage de l'état Z")
-for trace = 1:Ntraces
-    for i = 1:16 
-        for j = 1:256 
-            Z(trace,j,i)=X(trace,i);
-        end 
-    end 
+for j = 1:256 
+    Z(:,j,:) = X(1:Ntraces, :);
 end 
-% xor 
-cle = uint8(ones(Ntraces, 1) * (0:255));
 
+% ----- Valide au dessus de ce point
+
+% xor 
 disp("XOR sur Z")
-for k = 1:16 
-    Z(:,:,k) = bitxor(Z(:,:,k),cle(:,:));
-end 
+possibilites = int8(0:255);
+for trace = 1:Ntraces
+   for hypothese = 1:16
+      Z(trace, :, hypothese) = bitxor(Z(trace, :, hypothese), uint8(possibilites)); 
+   end
+end
 
 %shiftrow
 shiftRowInv = [1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3, 16, 13, 10, 7, 4];
@@ -135,10 +135,10 @@ invSBox(SBox(1:256)+1) = 0:255;
 
 disp("Inv subbyte")
 % on passe de 0-255 --> 1-256
-Z_sb = invSBox(Z_sr+1);
+Z_sb = invSBox(Z_sr + 1);
 
 % cleaning
-clearvars A cle file_name i j k trace X_str Z_sr Z
+% clearvars A cle file_name i j k trace X_str Z_sr Z
 
 
 %% attaque par HW
@@ -146,29 +146,31 @@ disp("-- 6) Attaque par Hamming weight")
 
 % matrice de binaires
 Weight_Hamming_vect =[0 1 1 2 1 2 2 3 1 2 2 3 2 3 3 4 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 4 5 5 6 5 6 6 7 5 6 6 7 6 7 7 8];
-HW = Weight_Hamming_vect(Z_sb + 1);
+HW = double(Weight_Hamming_vect(Z_sb + 1));
 
-%%
-L = load(fullfile(pwd, "cache", "fuites.mat"), "-mat").fuites;
-
-%%
+% Load leaks if it hasn't been done before
+if (exist("L", "var") == 0)
+    disp("Loading leaks...")
+    L = load(fullfile(pwd, "cache", "fuites.mat"), "-mat").fuites;
+end
 
 disp("Calcul des corrélations pour les sous-clés")
 best_candidate = zeros(16, 1);
 for k = 1:16
-    cor=corr(single(HW(:,:,k)),L(1:Ntraces, :));
-  
-    if k == 1
-    figure 
-    plot ((dernier_round), cor(:, dernier_round))
-    title('bcp de coef de correlation')
-    xlabel('echantillon')
-    ylabel('correlation')
-    end
+    cor=mycorr(HW(1:Ntraces, :, k), L(1:Ntraces, :));
 
     [RK, IK] = sort(max(abs(cor(:, dernier_round)), [], 2), 'descend'); 
     fprintf('%s %d %s %d \n','sous cle n°', k, ' : meilleur candidat : k=', IK(1) - 1)
     best_candidate(k)=IK(1)-1;
+    
+    if k == 1
+        figure 
+        plot ((dernier_round), cor(:, dernier_round))
+        title('bcp de coef de correlation')
+        xlabel('echantillon')
+        ylabel('correlation')
+        disp(IK(1:10))
+    end
 end 
 
 %% 
@@ -179,7 +181,7 @@ for i = 1:16
     key_dec(i) = hex2dec(key((2*i)-1 : 2*i));
 end
 
-w = zeros(11, 4, 4);
+w = uint8(zeros(11, 4, 4));
 w(1, :, :) = reshape(key_dec, 4, 4);
 
 for i = 1:10
