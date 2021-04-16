@@ -4,12 +4,12 @@ close all;
 
 folderSrc = 'path-to-B_AES_N4'; 
 % Number of traces
-ceil = ?;
+ceil = 1000;
 
 % modify the following variables to speed-up the measurement
 % (this can be done later after analysing the EM traces)
-xMin1 = ?;
-xMax1 = ?;
+xMin1 = 3000;
+xMax1 = 3500;
 
 inputOrder = 'chrono';
 
