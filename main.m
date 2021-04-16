@@ -38,6 +38,9 @@ xline(360, "--b", "1er round")
 xline(3510, "--b", "dernier round")
 hold off
 
+% cleaning
+clearvars i T Time;
+
 %% 2) Tracer la moyenne de consommation pour repérer le 1er et dernier round
 disp("-- 2) Calcul d'une moyenne des traces")
 
@@ -63,6 +66,9 @@ for i = 1:9
 end
 xline(3131, "--k", "Round final")
 hold off
+
+% cleaning
+clearvars i rounds_t_nb Time;
 
 %% 3) Démontrer que le poids de Hamming peut s'appliquer au dernier round
 
@@ -131,6 +137,9 @@ invSBox(SBox(1:256)+1)=0:255;
 
 % on passe de 0-255 --> 1-256
 Z_sb = invSBox(Z_sr+1);
+
+% cleaning
+clearvars A cle file_name i j k trace X_str Z_sr Z
 
 
 %% attaque par HW
