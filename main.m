@@ -106,8 +106,6 @@ end
 
 Ntraces = 5000;
 Z = uint8(zeros(Ntraces,256,16));
-Z_sr = uint8(zeros(Ntraces,256,16));
-Z_sb = uint8(zeros(Ntraces,256,16));
 
 disp("Remplissage de l'état Z")
 for trace = 1:Ntraces
@@ -118,14 +116,11 @@ for trace = 1:Ntraces
     end 
 end 
 % xor 
-cle = uint8(zeros(Ntraces,256,16));
-for k = 0:255
-   cle(:, k+1, :) = k;
-end
+cle = uint8(ones(Ntraces, 1) * (0:255));
 
 disp("XOR sur Z")
 for k = 1:16 
-    Z(:,:,k) = bitxor(Z(:,:,k),cle(:,:,k));
+    Z(:,:,k) = bitxor(Z(:,:,k),cle(:,:));
 end 
 
 %shiftrow
@@ -150,17 +145,18 @@ clearvars A cle file_name i j k trace X_str Z_sr Z
 disp("-- 6) Attaque par Hamming weight")
 
 % matrice de binaires
-z_10 = reshape(cellstr(dec2bin(Z_sb, 8)), size(Z_sb));
+Weight_Hamming_vect =[0 1 1 2 1 2 2 3 1 2 2 3 2 3 3 4 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 4 5 5 6 5 6 6 7 5 6 6 7 6 7 7 8];
+HW = Weight_Hamming_vect(Z_sb + 1);
 
-phi = count(z_10, "1");
-
+%%
 L = load(fullfile(pwd, "cache", "fuites.mat"), "-mat").fuites;
 
 %%
 
 disp("Calcul des corrélations pour les sous-clés")
+best_candidate = zeros(16, 1);
 for k = 1:16
-    cor=corr(single(phi(:,:,k)),L(1:Ntraces, :));
+    cor=corr(single(HW(:,:,k)),L(1:Ntraces, :));
   
     if k == 1
     figure 
@@ -189,9 +185,11 @@ w(1, :, :) = reshape(key_dec, 4, 4);
 for i = 1:10
     w(i+1, :, :) = key_schu(squeeze(w(i, :, :)), i);
 end
-disp(squeeze(w(11, :, :)))
+key_to_find = squeeze(w(11, :, :));
+disp(key_to_find)
 
 
 disp('best_candidate = ')
-disp(best_candidate)
-disp(sum(key_to_find == best_candidate))
+disp(reshape(best_candidate, 4, 4))
+disp("Nombre de correspondances: ")
+disp(sum(key_to_find == reshape(best_candidate, 4, 4)))
