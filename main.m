@@ -66,7 +66,16 @@ hold off
 
 %% 3) Démontrer que le poids de Hamming peut s'appliquer au dernier round
 
-disp(fullfile(folderSrc, folderInfo(i).name));
+% Pour rappel le poids de Hamming correspond au nombre d'éléments
+% différents de zéro dans une chaîne d'éléments dans un corps fini
+% (comme un corps de gallois)
+% Dans un corps de gallois il s'agit donc du nombre de 1 que les données
+% contiennent. Comme la clé est de taille 8 on va avoir un poids de hamming
+% qui varie entre 0 et 8. Il faudra le relever sur la variable sensible
+% que l'on obtient aux questions d'après.
+
+% Afin d'appliquer le modèle du poids de Hamming au dernier round (Subbyte,
+% shiftrow, addroundkey) 
 
 %% 4) Selection du dernier round pour attaquer plus rapidement
 % par lecture le dernier round se trouve entre t=3057 et t=3330
@@ -118,6 +127,11 @@ z_10=de2bi(zattack,8,'left-msb');
 HW = uint8(reshape(sum(z_10,2),size(zattack,1),size(zattack,2)));
 phi = HW; 
 
+shiftRowInv = [1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3, 16, 13, 10, 7, 4];
+
+% a une dimension mais tu peux l'appliquer sur la colonne de ton choix
+Z_init = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+Z_modif = Z_init(shiftRowInv);
 
 L = load(fullfile(pwd, "cache", "fuites.mat"), "-mat").fuites;
 cor=corr(single(phi),L);
