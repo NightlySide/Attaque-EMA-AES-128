@@ -85,10 +85,10 @@ clearvars i rounds_t_nb Time;
 
 %% 4) Selection du dernier round pour attaquer plus rapidement
 % par lecture le dernier round se trouve entre t=3057 et t=3330
-dernier_round = 3057:3330;
+dernier_round = 3000:3500;
 moyenne_sur_dernier_round = moyenne(dernier_round);
 
-%% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque) A REFAIRE 
+%% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque)
 % récupération du chiffré X_str
 disp("-- 5) Prédiction d'état")
 
@@ -104,7 +104,7 @@ for k = 3:20002
     end
 end
 
-Ntraces = 5000;
+Ntraces = 10000;
 Z = uint8(zeros(Ntraces,256,16));
 Z_sr = uint8(zeros(Ntraces,256,16));
 Z_sb = uint8(zeros(Ntraces,256,16));
@@ -179,8 +179,12 @@ key_dec = zeros(16);
 for i = 1:16
     key_dec(i) = hex2dec(key((2*i)-1 : 2*i));
 end
-key_to_find = key_schu(reshape(key_dec, 4, 4), 10);
-disp(best_candidate)
+key_to_find = reshape(key_schu(reshape(key_dec, 4, 4), 10).', 1, [])
 
-
-
+count=0;
+for i = 1:16 
+    if key_to_find(i) == best_candidate(i)
+       count = count + 1; 
+    end
+end
+disp(count)
