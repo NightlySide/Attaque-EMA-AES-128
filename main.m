@@ -79,7 +79,8 @@ hold off
 
 %% 4) Selection du dernier round pour attaquer plus rapidement
 % par lecture le dernier round se trouve entre t=3057 et t=3330
-dernier_round = moyenne(3057:3330);
+dernier_round = 3057:3330;
+moyenne_sur_dernier_round = moyenne(dernier_round);
 
 %% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque) A REFAIRE 
 % récupération du chiffré X_str
