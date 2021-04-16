@@ -104,7 +104,7 @@ for k = 3:20002
     end
 end
 
-Ntraces = 10000;
+Ntraces = 20000;
 Z = uint8(zeros(Ntraces,256,16));
 Z_sr = uint8(zeros(Ntraces,256,16));
 Z_sb = uint8(zeros(Ntraces,256,16));
@@ -157,7 +157,6 @@ phi = count(z_10, "1");
 L = load(fullfile(pwd, "cache", "fuites.mat"), "-mat").fuites;
 
 disp("Calcul des corrélations pour les sous-clés")
-best_candidate = zeros(16);
 for k = 1:16
     cor=corr(single(phi(:,:,k)),L(1:Ntraces,:));
     
@@ -175,16 +174,10 @@ end
 %% 
 disp("Affichage de la clé à obtenir")
 key = '4c8cdf23b5c906f79057ec7184193a67';
-key_dec = zeros(16);
+key_dec = zeros(16, 1);
 for i = 1:16
     key_dec(i) = hex2dec(key((2*i)-1 : 2*i));
 end
 key_to_find = reshape(key_schu(reshape(key_dec, 4, 4), 10).', 1, [])
-
-count=0;
-for i = 1:16 
-    if key_to_find(i) == best_candidate(i)
-       count = count + 1; 
-    end
-end
-disp(count)
+disp(best_candidate)
+disp(sum(key_to_find == best_candidate))
