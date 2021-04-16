@@ -113,26 +113,24 @@ disp("Remplissage de l'état Z")
 for trace = 1:Ntraces
     for hypothese = 1:256
         for valeur = 1:16
-            Z(trace, hypothese, valeur) = X(trace, valeur);
+            Z(trace, hypothese, valeur) = uint8(X(trace, valeur));
         end 
     end 
 end
-
-% ----- Valide au dessus de ce point
 
 % xor 
 disp("XOR sur Z")
 for trace = 1:Ntraces
    for valeur = 1:16
        for hypothese = 1:256
-           Z(trace, hypothese, valeur) = bitxor(Z(trace, hypothese, valeur), uint8(hypothese-1)); 
+           Z(trace, hypothese, valeur) = uint8(bitxor(Z(trace, hypothese, valeur), uint8(hypothese-1))); 
        end
    end
 end
 disp("X")
 disp(X(1, 1))
 disp("Z")
-disp(Z(1, :, 1))
+disp(squeeze(Z(1, :, 1)))
 
 %shiftrow
 shiftRowInv = [1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3, 16, 13, 10, 7, 4];
@@ -170,8 +168,8 @@ end
 disp("-- 6) Attaque par Hamming weight")
 
 % matrice de binaires
-Weight_Hamming_vect =[0 1 1 2 1 2 2 3 1 2 2 3 2 3 3 4 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 4 5 5 6 5 6 6 7 5 6 6 7 6 7 7 8];
-HW = double(Weight_Hamming_vect(Z_sb + 1));
+Weight_Hamming_vect = [0 1 1 2 1 2 2 3 1 2 2 3 2 3 3 4 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 4 5 5 6 5 6 6 7 5 6 6 7 6 7 7 8];
+HW = Weight_Hamming_vect(Z_sb + 1);
 
 % Load leaks if it hasn't been done before
 if (exist("L", "var") == 0)
@@ -182,13 +180,13 @@ end
 disp("Calcul des corrélations pour les sous-clés")
 best_candidate = zeros(16, 1);
 for k = 1:16
-    cor=mycorr(HW(1:Ntraces, :, k), L(1:Ntraces, :));
+    cor=mycorr(double(HW(1:Ntraces, :, k)), double(L(1:Ntraces, :)));
 
     [RK, IK] = sort(max(abs(cor(:, dernier_round)), [], 2), 'descend'); 
     fprintf('%s %d %s %d \n','sous cle n°', k, ' : meilleur candidat : k=', IK(1) - 1)
     best_candidate(k)=IK(1)-1;
     
-    if k == 1
+    if k == 2
         figure 
         plot(dernier_round, cor(:, dernier_round))
         title('bcp de coef de correlation')
