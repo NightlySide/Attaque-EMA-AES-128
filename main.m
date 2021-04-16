@@ -98,11 +98,11 @@ for k = 3:20002
     X_str = strtok(A{1,2}, '.');
     % conversion en chiffré manipulable
     for i = 1:(length(X_str)/2)
-        X(k-2, i) = hex2dec(X_str(i:i+1));
+        X(k-2, i) = hex2dec(X_str(2*i-1:2*i));
     end
 end
 
-Ntraces = 500;
+Ntraces = 5000;
 Z = uint8(zeros(Ntraces,256,16));
 Z_sr = uint8(zeros(Ntraces,256,16));
 Z_sb = uint8(zeros(Ntraces,256,16));
@@ -153,14 +153,27 @@ phi = HW;
 
 L = load(fullfile(pwd, "cache", "fuites.mat"), "-mat").fuites;
 
-cor=corr(single(phi(:,:,1)),L(1:Ntraces,:));
-figure 
-plot ((3000:3500), cor(1:16, 3000:3500))
-title('16 coef de corrélation')
-xlabel('echantillon')
-ylabel('correlation')
+for k = 1:16
+    cor=corr(single(phi(:,:,k)),L(1:Ntraces,:));
+    
+%     figure 
+%     plot ((dernier_round), cor(:, dernier_round))
+%     title('bcp de coef de correlation')
+%     xlabel('echantillon')
+%     ylabel('correlation')
 
-[RK, IK] = sort(max(abs(cor(1:16, 3000:3500)), [], 2), 'descend'); 
-sprintf('%s %d', 'meilleur candidat : k=', IK(1) - 1)
-best_candidate=IK(1);
+    [RK, IK] = sort(max(abs(cor(:, dernier_round)), [], 2), 'descend'); 
+    sprintf('%s %d %s %d','sous cle n°', k, ' : meilleur candidat : k=', IK(1) - 1)
+    best_candidate(k)=IK(1);
+end 
+
+%% 
+key = '4c8cdf23b5c906f79057ec7184193a67';
+for i = 1:16
+    key_dec(i) = hex2dec(key((2*i)-1 : 2*i));
+end
+key_to_find = key_schu(reshape(key_dec, 4, 4), 10)
+disp(best_candidate)
+
+
 
