@@ -85,7 +85,7 @@ clearvars i rounds_t_nb Time;
 
 %% 4) Selection du dernier round pour attaquer plus rapidement
 % par lecture le dernier round se trouve entre t=3057 et t=3330
-dernier_round = 2700:3200;
+dernier_round = 2800:3500;
 moyenne_sur_dernier_round = moyenne(dernier_round);
 
 %% 5)prédiction d'etat sur la 1ere mesure (avant remontage sur point d'attaque)
@@ -94,7 +94,7 @@ Ntraces = 20000;
 disp("-- 5) Prédiction d'état")
 
 disp("Récupération des chiffrés")
-X = zeros((Ntraces+2), 16);
+X = zeros(Ntraces, 16);
 for k = 3:(Ntraces+2)
     file_name = fullfile(folderSrc, folderInfo(k).name);
     A = strsplit(file_name, '_cto=');
@@ -106,6 +106,7 @@ for k = 3:(Ntraces+2)
 end
 
 Z    = uint8(zeros(Ntraces,256,16));
+Z_xor= uint8(zeros(Ntraces,256,16));
 Z_sr = uint8(zeros(Ntraces,256,16));
 Z_sb = uint8(zeros(Ntraces,256,16));
 
@@ -123,23 +124,24 @@ disp("XOR sur Z")
 for trace = 1:Ntraces
    for valeur = 1:16
        for hypothese = 1:256
-           Z(trace, hypothese, valeur) = uint8(bitxor(Z(trace, hypothese, valeur), uint8(hypothese-1))); 
+           Z_xor(trace, hypothese, valeur) = uint8(bitxor(Z(trace, hypothese, valeur), uint8(hypothese-1))); 
        end
    end
 end
 disp("X")
 disp(X(1, 1))
 disp("Z")
-disp(squeeze(Z(1, :, 1)))
+disp(squeeze(Z_xor(1, :, 1)))
 
 %shiftrow
 shiftRowInv = [1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3, 16, 13, 10, 7, 4];
+shiftrow = [1,6,11,16,5,10,15,4,9,14,3,8,13,2,7,12];
 
 disp("ShiftRow inverse")
 for trace = 1:Ntraces
     for valeur = 1:16
        for hypothese = 1:256
-           Z_sr(trace, hypothese, valeur) = Z(trace, hypothese, shiftRowInv(valeur)); 
+           Z_sr(trace, hypothese, valeur) = Z_xor(trace, hypothese, shiftRowInv(valeur)); 
        end
    end
 end
@@ -147,7 +149,7 @@ end
 
 % on remonte encore pour arriver au point d'attaque 
 SBox=[99,124,119,123,242,107,111,197,48,1,103,43,254,215,171,118,202,130,201,125,250,89,71,240,173,212,162,175,156,164,114,192,183,253,147,38,54,63,247,204,52,165,229,241,113,216,49,21,4,199,35,195,24,150,5,154,7,18,128,226,235,39,178,117,9,131,44,26,27,110,90,160,82,59,214,179,41,227,47,132,83,209,0,237,32,252,177,91,106,203,190,57,74,76,88,207,208,239,170,251,67,77,51,133,69,249,2,127,80,60,159,168,81,163,64,143,146,157,56,245,188,182,218,33,16,255,243,210,205,12,19,236,95,151,68,23,196,167,126,61,100,93,25,115,96,129,79,220,34,42,144,136,70,238,184,20,222,94,11,219,224,50,58,10,73,6,36,92,194,211,172,98,145,149,228,121,231,200,55,109,141,213,78,169,108,86,244,234,101,122,174,8,186,120,37,46,28,166,180,198,232,221,116,31,75,189,139,138,112,62,181,102,72,3,246,14,97,53,87,185,134,193,29,158,225,248,152,17,105,217,142,148,155,30,135,233,206,85,40,223,140,161,137,13,191,230,66,104,65,153,45,15,176,84,187,22];
-invSBox(SBox(1:256)+1) = 0:255;
+invSBox(SBox(1:256)+1)=0:255;
 
 disp("Inv subbyte")
 % on passe de 0-255 --> 1-256
@@ -180,15 +182,15 @@ end
 disp("Calcul des corrélations pour les sous-clés")
 best_candidate = zeros(16, 1);
 for k = 1:16
-    cor=mycorr(double(HW(1:Ntraces, :, k)), double(L(1:Ntraces, :)));
+    cor=mycorr(double(HW(1:Ntraces, :, k)), double(L(1:Ntraces, dernier_round)));
 
-    [RK, IK] = sort(max(abs(cor(:, dernier_round)), [], 2), 'descend'); 
+    [RK, IK] = sort(max(abs(cor(:, :)), [], 2), 'descend'); 
     fprintf('%s %d %s %d \n','sous cle n°', k, ' : meilleur candidat : k=', IK(1) - 1)
     best_candidate(k)=IK(1)-1;
     
-    if k == 2
+    if k == 1
         figure 
-        plot(dernier_round, cor(:, dernier_round))
+        plot(dernier_round, cor(:, :))
         title('bcp de coef de correlation')
         xlabel('echantillon')
         ylabel('correlation')
