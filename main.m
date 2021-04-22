@@ -170,8 +170,15 @@ end
 disp("-- 6) Attaque par Hamming weight")
 
 % matrice de binaires
+
 Weight_Hamming_vect = [0 1 1 2 1 2 2 3 1 2 2 3 2 3 3 4 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 1 2 2 3 2 3 3 4 2 3 3 4 3 4 4 5 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 2 3 3 4 3 4 4 5 3 4 4 5 4 5 5 6 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 3 4 4 5 4 5 5 6 4 5 5 6 5 6 6 7 4 5 5 6 5 6 6 7 5 6 6 7 6 7 7 8];
-HW = Weight_Hamming_vect(Z_sb + 1);
+DH = uint8(zeros(Ntraces,256,16));
+for i = 1:256
+    for k =1:16 
+        DH(:,i,k) = bitxor(Z_sb(:,i,k), uint8(X(:,k)));
+    end 
+end
+Phi = Weight_Hamming_vect(DH+1);
 
 % Load leaks if it hasn't been done before
 if (exist("L", "var") == 0)
@@ -182,20 +189,17 @@ end
 disp("Calcul des corrélations pour les sous-clés")
 best_candidate = zeros(16, 1);
 for k = 1:16
-    cor=mycorr(double(HW(1:Ntraces, :, k)), double(L(1:Ntraces, dernier_round)));
+    cor=mycorr(double(HW(1:Ntraces,:, shiftrow(k))), double(L(1:Ntraces, dernier_round)));
 
     [RK, IK] = sort(max(abs(cor(:, :)), [], 2), 'descend'); 
     fprintf('%s %d %s %d \n','sous cle n°', k, ' : meilleur candidat : k=', IK(1) - 1)
     best_candidate(k)=IK(1)-1;
-    
-    if k == 1
-        figure 
-        plot(dernier_round, cor(:, :))
-        title('bcp de coef de correlation')
-        xlabel('echantillon')
-        ylabel('correlation')
-        disp(IK(1:10))
-    end
+
+    figure 
+    plot(dernier_round, cor(:, :))
+    title('bcp de coef de correlation')
+    xlabel('echantillon')
+    ylabel('correlation')
 end 
 
 %% 
