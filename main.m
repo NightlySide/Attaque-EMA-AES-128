@@ -128,10 +128,6 @@ for trace = 1:Ntraces
        end
    end
 end
-disp("X")
-disp(X(1, 1))
-disp("Z")
-disp(squeeze(Z_xor(1, :, 1)))
 
 %shiftrow
 shiftRowInv = [1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3, 16, 13, 10, 7, 4];
@@ -188,16 +184,18 @@ end
 
 disp("Calcul des corrélations pour les sous-clés")
 best_candidate = zeros(16, 1);
+figure
+sgtitle("Corrélation par méthode du poids de Hamming")
 for k = 1:16
-    cor=mycorr(double(HW(1:Ntraces,:, shiftrow(k))), double(L(1:Ntraces, dernier_round)));
+    cor=mycorr(double(Phi(1:Ntraces,:, shiftrow(k))), double(L(1:Ntraces, dernier_round)));
 
     [RK, IK] = sort(max(abs(cor(:, :)), [], 2), 'descend'); 
     fprintf('%s %d %s %d \n','sous cle n°', k, ' : meilleur candidat : k=', IK(1) - 1)
     best_candidate(k)=IK(1)-1;
 
-    figure 
+    subplot(4,4,k)
     plot(dernier_round, cor(:, :))
-    title('bcp de coef de correlation')
+    title("k=" + num2str(k))
     xlabel('echantillon')
     ylabel('correlation')
 end 
